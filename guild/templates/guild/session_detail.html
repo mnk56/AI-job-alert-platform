@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}面接 #{{ session.pk }}{% endblock %}
+
+{% block content %}
+<h1>{{ session.company.name }} の面接</h1>
+
+<div class="card">
+    <p><strong>会社:</strong>
+        <a href="{% url 'guild:company_detail' pk=session.company.pk %}">{{ session.company.name }}</a>
+    </p>
+    <p><strong>挑戦者:</strong> {{ session.challenger.username }}</p>
+    <p><strong>ステータス:</strong> {{ session.get_status_display }}</p>
+    {% if session.score is not None %}
+    <p><strong>スコア:</strong> {{ session.score }} / 5</p>
+    {% endif %}
+    <p><strong>開始日時:</strong> {{ session.created_at|date:'Y年n月j日 H:i' }}</p>
+</div>
+
+{# ★ 1対多リレーションの逆参照: session.chatlogs.all() で発言一覧を時系列に #}
+<div class="card">
+    <h2>会話履歴</h2>
+    <div class="chat">
+        {% for log in session.chatlogs.all %}
+        <div class="chat-row chat-{{ log.role }}">
+            <div class="chat-role">{{ log.get_role_display }}</div>
+            <div class="chat-bubble">{{ log.message|linebreaksbr }}</div>
+            <div class="chat-time">{{ log.created_at|date:'H:i' }}</div>
+        </div>
+        {% empty %}
+        <p>まだ発言はない。最初の一言を投げてみよう。</p>
+        {% endfor %}
+    </div>
+</div>
+
+{# 挑戦者本人かつ進行中の場合のみ操作可能 #}
+{% if user.is_authenticated and session.challenger == user and session.status == 'in_progress' %}
+<form method="post" action="{% url 'guild:chatlog_post' session_pk=session.pk %}" class="card">
+    {% csrf_token %}
+    <textarea name="message" rows="3" placeholder="発言を入力" required></textarea>
+    <p style="margin-top: 0.5rem;"><button type="submit">送信</button></p>
+</form>
+
+<form method="post" action="{% url 'guild:session_finish' pk=session.pk %}" class="card">
+    {% csrf_token %}
+    <button type="submit">面接を終了して合否判定を受ける</button>
+</form>
+{% endif %}
+
+{% if session.judge_comment %}
+<div class="card">
+    <h2>判定結果</h2>
+    <p><strong>{{ session.get_status_display }}</strong>(スコア {{ session.score }} / 5)</p>
+    <p>{{ session.judge_comment|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+<p><a href="{% url 'guild:company_detail' pk=session.company.pk %}">← {{ session.company.name }} に戻る</a></p>
+{% endblock %}

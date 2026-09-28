@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ company.name }}{% endblock %}
+{% block content %}
+<h1>{{ company.name }}</h1>
+
+<div class="card">
+    <h2>経営理念・特徴</h2>
+    <div>{{ company.description|linebreaks }}</div>
+</div>
+
+<div class="card">
+    <p><strong>設立者:</strong> {{ company.owner.username }}</p>
+    <p><strong>設立日:</strong> {{ company.created_at|date:'Y年n月j日 H:i' }}</p>
+    
+    {# タグ表示は履歴の有無に関わらず表示した方が良いため外に出しました #}
+    {% if company.tags.all %}
+    <p class="tags-inline">
+        {% for tag in company.tags.all %}<span class="tag">#{{ tag.name }}</span>{% endfor %}
+    </p>
+    {% endif %}
+</div>
+
+{# ★ 面接開始ボタン #}
+{% if user.is_authenticated %}
+<div class="card">
+    <form method="post" action="{% url 'guild:session_start' company_pk=company.pk %}">
+        {% csrf_token %}
+        <button type="submit">この会社の面接を開始する</button>
+    </form>
+</div>
+{% else %}
+<p><a href="{% url 'login' %}">ログイン</a>すると面接に挑戦できます。</p>
+{% endif %}
+
+{# ★ 面接履歴 #}
+<div class="card">
+    <h2>これまでの面接</h2>
+    {% if company.sessions.all %}
+    <ul class="companies">
+        {% for s in company.sessions.all %}
+        <li>
+            <a href="{% url 'guild:session_detail' pk=s.pk %}">
+                {{ s.challenger.username }}({{ s.get_status_display }})
+            </a>
+            <small>— {{ s.created_at|date:'Y年n月j日 H:i' }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>まだ誰もこの会社に挑戦していない。</p>
+    {% endif %}
+</div>
+
+<p><a href="{% url 'guild:index' %}">← 一覧に戻る</a></p>
+{% endblock %}

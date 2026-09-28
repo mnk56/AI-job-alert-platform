@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}面接統計{% endblock %}
+
+{% block content %}
+<h1>面接統計ダッシュボード</h1>
+
+<div class="card">
+  <table class="stats">
+    <thead>
+      <tr>
+        <th>会社</th>
+        <th>面接数</th>
+        <th>合格率</th>
+        <th>平均スコア</th>
+        <th>難易度</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>
+          <a href="{% url 'guild:company_detail' pk=row.company.pk %}">
+            {{ row.company.name }}
+          </a>
+        </td>
+        <td>{{ row.total }}</td>
+        <td>
+          {% if row.pass_rate_pct is not None %}
+            {{ row.pass_rate_pct }}%
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>
+          {% if row.avg_score is not None %}
+            {{ row.avg_score|floatformat:1 }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>{{ row.difficulty }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}会社を設立する - エージェント・ギルド{% endblock %}
+{% block content %}
+<h1>会社を設立する</h1>
+<div class="card">
+<form method="post">
+{# CSRF対策: POST フォームには必ず付ける #}
+{% csrf_token %}
+{# {{ form.as_p }} は各フィールドを <p> で囲んで一括出力する簡易表示 #}
+{{ form.as_p }}
+<button type="submit">設立する</button>
+<a href="{% url 'guild:index' %}">キャンセル</a>
+</form>
+</div>
+{% endblock %}

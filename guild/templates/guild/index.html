@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: #f7f9fc;
+        color: #333;
+    }
+    h1 {
+        color: #2a5d84;
+        border-bottom: 3px solid #7bb3d9;
+        padding-bottom: 0.5rem;
+    }
+    .card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<div class="card">
+    <p>架空の会社を設立して、AI面接官に就活生を裁いてもらおう。</p>
+    {% if user.is_authenticated %}
+        <a class="btn" href="{% url 'guild:company_create' %}">会社を設立する</a>
+    {% else %}
+        <p><a href="{% url 'login' %}">ログイン</a>すると会社を設立できます。</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>登録された会社</h2>
+    {% if companies %}
+    <ul class="companies">
+        {% for company in companies %}
+        <li>
+            <a href="{% url 'guild:company_detail' pk=company.pk %}">{{ company.name }}</a>
+            <small>— {{ company.owner.username }} / {{ company.created_at|date:'Y年n月j日' }}</small>
+            
+            {# 会社ごとのタグ表示（もしリストに表示したい場合） #}
+            {% if company.tags.all %}
+                <span class="tags-inline">
+                    {% for tag in company.tags.all %}<span class="tag">#{{ tag.name }}</span>{% endfor %}
+                </span>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>まだ会社が登録されていません。</p>
+    {% endif %}
+</div>
+{% endblock %}
